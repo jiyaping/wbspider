@@ -1,7 +1,7 @@
 # encoding : utf-8
 
 module Wbspider
-  class FansPage < WebPage
+  class FansPage < FollowPage
     def nextpage
       return nil if last?
 
@@ -17,6 +17,17 @@ module Wbspider
       if(node)
         node.text.sub('的粉丝', '')
       end
+    end
+
+    def ext_single_follow(node)
+      fields = {}
+
+      fields[:user_id] = ext_follow(node)
+      fields[:user_nick] = ext_follow_nick(node)
+      fields[:follower_id] = @userid
+      fields[:follower_nick] = @usernick
+      
+      fields
     end
   end
 end

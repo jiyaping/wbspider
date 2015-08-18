@@ -21,6 +21,7 @@ module Wbspider
       @page_idx, @total_page = get_page_size
       @models = []
 
+      fill_models
       page_save if page2db
       model_save if model2db
     end
@@ -66,6 +67,9 @@ module Wbspider
     end
 
     def nickname
+    end
+
+    def fill_models
     end
 
     def first?

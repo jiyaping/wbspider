@@ -2,21 +2,26 @@
 
 module Wbspider
   class << self
-    attr_accessor :config
+    attr_accessor :config, :db
 
     def configure
       yield self.config ||= Config.new
     end
+
+    def setup_db
+      @db = Sequel.connect(config.db_string)
+    end
   end
 
   class Config
-    attr_accessor :uname, :password, :path, :start_from
+    attr_accessor :uname, :password, :path, :start_from, :db_string
 
     def initialize(opts={})
-      :uname = opts[:uname]
-      :password = opts[:password]
-      :path = opts[:path] || File.join(Dir.home, "wbspider")
-      :start_from = opts[:start_from]
+      @uname = opts[:uname]
+      @password = opts[:password]
+      @path = opts[:path] || File.join(Dir.home, "wbspider")
+      @start_from = opts[:start_from]
+      @db_string = opts[:db_string] || File.join(@path, "weibo.sqlite")
     end
   end
 end
