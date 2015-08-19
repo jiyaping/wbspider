@@ -9,7 +9,7 @@ module Wbspider
         :q_done_len => 5_000,
         :q_todo_len => 30_000,
         :start_id => 'jiyaping0802',
-        :db => Wbspider.db,
+        :db => '',
         :site_uname => '18938952082',
         :site_pwd => '20080802',
         :cookie_file => "c:\\",

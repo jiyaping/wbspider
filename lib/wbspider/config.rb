@@ -10,6 +10,12 @@ module Wbspider
 
     def setup_db
       @db = Sequel.connect(config.db_string)
+      
+      require 'wbspider/model/page'
+      require 'wbspider/model/profile'
+      require 'wbspider/model/relation'
+      require 'wbspider/model/weibo'
+      require 'wbspider/model/dbhandler'
     end
   end
 

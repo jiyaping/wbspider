@@ -5,7 +5,6 @@ module Wbspider
     attr_accessor :agent, 
                   :page_idx,
                   :total_page,
-                  :path,
                   :ssl,
                   :spiderid,
                   :page2db,
@@ -15,8 +14,8 @@ module Wbspider
       @agent = opts[:agent]
       @ssl = opts[:ssl] || false
       @spiderid = opts[:spiderid] || 'Voyager.1'
-      @page2db = opts[:page2db] || true
-      @model2db = opts[:model2db] || true 
+      @page2db = opts[:page2db] || false
+      @model2db = opts[:model2db] || false 
 
       @page_idx, @total_page = get_page_size
       @models = []
@@ -66,11 +65,9 @@ module Wbspider
       $1 if agent.page.uri.to_s.match /\/(\d+)\/?/
     end
 
-    def nickname
-    end
+    def nickname; end
 
-    def fill_models
-    end
+    def fill_models; end
 
     def first?
       @page_idx == 1
@@ -78,6 +75,10 @@ module Wbspider
 
     def last?
       @page_idx == @total_page
+    end
+
+    def info
+      "#{@page_idx} #{@total_page} #{@spiderid}"
     end
   end
 end
