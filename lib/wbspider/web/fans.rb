@@ -3,7 +3,7 @@
 module Wbspider
   class FansPage < FollowPage
     def nextpage
-      return nil if last?
+      return if last?
 
       next_path = "#{user}/fans?page=#{@page_idx}"
       @agent.get(fullpath(next_path))
@@ -22,10 +22,10 @@ module Wbspider
     def ext_single_follow(node)
       fields = {}
 
-      fields[:user_id] = ext_follow(node)
-      fields[:user_nick] = ext_follow_nick(node)
-      fields[:follower_id] = @userid
-      fields[:follower_nick] = @usernick
+      fields[:user_id]        =   ext_follow(node)
+      fields[:user_nick]      =   ext_follow_nick(node)
+      fields[:follower_id]    =   @userid
+      fields[:follower_nick]  =   @usernick
       
       fields
     end

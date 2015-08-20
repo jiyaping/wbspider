@@ -5,7 +5,7 @@ module Wbspider
     include Wbspider::PageParser
 
     def nextpage
-      return nil if last?
+      return if last?
 
       next_path = "#{user}?page=#{@page_idx}"
       @agent.get(fullpath(next_path))
