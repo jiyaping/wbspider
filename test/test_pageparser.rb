@@ -9,10 +9,10 @@ class PageParser_Test < Minitest::Test
   include Wbspider::PageParser
 
   def setup
-    @original = Nokogiri::HTML(open('test/original_weibo.html'), nil, 'UTF-8').at("div[id*='M_']")
-    @repost = Nokogiri::HTML(open('test/repost_weibo.html'), nil, 'UTF-8').at("div[id*='M_']")
-    @timeline = Nokogiri::HTML(open('test/timeline_weibo.html'), nil, 'UTF-8').at("div[id*='M_']")
-    @timeline_repost = Nokogiri::HTML(open('test/timeline_repost.html'), nil, 'UTF-8').at("div[id*='M_']")
+    @original = Nokogiri::HTML(open('test/local_page/original_weibo.html'), nil, 'UTF-8').at("div[id*='M_']")
+    @repost = Nokogiri::HTML(open('test/local_page/repost_weibo.html'), nil, 'UTF-8').at("div[id*='M_']")
+    @timeline = Nokogiri::HTML(open('test/local_page/timeline_weibo.html'), nil, 'UTF-8').at("div[id*='M_']")
+    @timeline_repost = Nokogiri::HTML(open('test/local_page/timeline_repost.html'), nil, 'UTF-8').at("div[id*='M_']")
   end
 
   def test_timeline_ext_nickname_href

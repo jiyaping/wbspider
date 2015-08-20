@@ -11,17 +11,17 @@ module Wbspider
                   :model2db
 
     def initialize(opts={})
-      @agent = opts[:agent]
-      @ssl = opts[:ssl] || false
-      @spiderid = opts[:spiderid] || 'Voyager.1'
-      @page2db = opts[:page2db] || false
+      @agent    = opts[:agent]
+      @ssl      = opts[:ssl]      || false
+      @spiderid = opts[:spiderid] || 'Voyager.NO1'
+      @page2db  = opts[:page2db]  || false
       @model2db = opts[:model2db] || false 
 
       @page_idx, @total_page = get_page_size
-      @models = []
+      @models   = []
 
       fill_models
-      page_save if page2db
+      page_save  if page2db
       model_save if model2db
     end
 
@@ -32,7 +32,7 @@ module Wbspider
     end
 
     def page_save
-      (Page.new do |p|
+      (Wbspider::Page.new do |p|
         p.original_id =   user
         p.nickname    =   nickname
         p.url         =   @agent.page.uri

@@ -7,7 +7,7 @@ module Wbspider
     end
 
     def fill_models
-       models << Profile.new(ext_base_info)
+       @models << Wbspider::Profile.new(ext_base_info)
     end
 
     def ext_base_info()
