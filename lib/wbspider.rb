@@ -2,9 +2,9 @@
 
 require 'mechanize'
 require 'yaml'
-require 'sequel'
+require 'active_record'
 
-require 'wbspider/quene'
+require 'wbspider/queue'
 require 'wbspider/todo'
 require 'wbspider/dones'
 require 'wbspider/agent'
@@ -17,19 +17,29 @@ require 'wbspider/web/profile'
 require 'wbspider/web/webpage'
 require 'wbspider/web/weibo'
 
+require 'wbspider/model/page'
+require 'wbspider/model/profile'
+require 'wbspider/model/relation'
+require 'wbspider/model/weibo'
+require 'wbspider/model/done'
+require 'wbspider/model/migration'
+
 module Wbspider
   class WbspiderError < StandardError; end
   class ConfigureError < WbspiderError; end
   class LoginError < WbspiderError; end
 
+  @home = File.join(Dir.home, 'wbspider')
+  Dir.mkdir(@home) unless Dir.exists?(@home)
+
   # default config
   @config = {
     :username   =>  nil,
     :password   =>  nil,
-    :path       =>  File.join(Dir.home, "wbspider"),
+    :path       =>  @home,
     :start_from =>  '',
-    :db_string  =>  File.join(@path, "weibo.sqlite"),
-    :cookie_path=>  File.join(@path, 'cookies'),
+    :db_string  =>  File.join(@home, "weibo.sqlite"),
+    :cookie_path=>  File.join(@home, 'cookies'),
     :spider     =>  'Voyager.NO1'
   }
 
@@ -71,16 +81,19 @@ module Wbspider
     configure(config)
   end
 
-  def self.setup_db
-    @db = Sequel.connect(config[:db_string])
-    
-    require 'wbspider/model/page'
-    require 'wbspider/model/profile'
-    require 'wbspider/model/relation'
-    require 'wbspider/model/weibo'
-    require 'wbspider/model/dbhandler'
+  def self.setup_db(str=config[:db_string])
+    ActiveRecord::Base.establish_connection(
+      adapter:  "sqlite3",
+      database: str
+    )
 
-    create_tables(@db)
+    create_tables
+  end
+
+  def self.create_tables()
+    %w[Done Page Profile Relation Weibo].each do |item|
+      eval("Add#{item}.up unless #{item}.table_exists?")
+    end
   end
 
   def self.config
@@ -89,5 +102,9 @@ module Wbspider
 
   def self.db
     @db
+  end
+
+  def self.home
+    @home
   end
 end

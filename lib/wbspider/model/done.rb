@@ -1,6 +1,6 @@
 # encoding : utf-8
 
 module Wbspider
-  class Weibo < ActiveRecord::Base
+  class Done < ActiveRecord::Base
   end
 end

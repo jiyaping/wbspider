@@ -32,7 +32,7 @@ module Wbspider
     end
 
     def page_save
-      (Wbspider::Page.new do |p|
+      (Page.new do |p|
         p.original_id =   user
         p.nickname    =   nickname
         p.url         =   @agent.page.uri

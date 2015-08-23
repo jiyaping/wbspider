@@ -2,70 +2,69 @@ gem "minitest"
 require 'minitest/autorun'
 require 'wbspider'
 
-class QueneTodoTest < Minitest::Test
+class QueueTodoTest < Minitest::Test
   include Wbspider
 
   def setup
-    @db = Sequel.sqlite
-    @db.create_table? :dones do
-      primary_key :id
-      String      :value
-    end
     @q_length = 5
-    @todo = QueneTodo.new(@db, @q_length)
+    @todo = QueueTodo.new(Wbspider::Done, @q_length)
   end
 
-  def test_enquene
-    @todo.enquene 10
+  def test_enqueue
+    @todo.enqueue 10
     assert_equal 10, @todo.pop
   end
 
-  def test_enquene_equel_qlength
+  def test_enqueue_equel_qlength
     @q_length.times do |i|
-      @todo.enquene i
+      @todo.enqueue i
     end
 
     assert_equal [0, 1, 2, 3, 4], @todo
   end
 
-  def test_enquene_more_than_qlength
+  def test_enqueue_more_than_qlength
     @q_length.times do |i|
-      @todo.enquene i
+      @todo.enqueue i
     end
 
-    @todo.enquene 100_000
+    @todo.enqueue 100_000
 
-    refute_includes @todo, 100_000, "when quene is full then throw it!"
+    refute_includes @todo, 100_000, "when queue is full then throw it!"
   end
 
-  def test_enquene_value_has_exists_local
-    @todo.enquene 10
-    @todo.enquene 1
-    @todo.enquene 10
+  def test_enqueue_value_has_exists_local
+    @todo.enqueue 10
+    @todo.enqueue 1
+    @todo.enqueue 10
 
     assert_equal [10, 1], @todo
   end
 
-  def test_dequene
-    @todo.enquene 1
-    @todo.enquene 2
-    @todo.enquene 3
+  def test_dequeue
+    @todo.enqueue 1
+    @todo.enqueue 2
+    @todo.enqueue 3
 
-    assert_equal 1, @todo.dequene
+    assert_equal 1, @todo.dequeue
   end
 
-  def test_dequene_if_quene_empty
-    refute @todo.dequene
+  def test_dequeue_if_queue_empty
+    refute @todo.dequeue
   end
 
-  def test_dequene_from_exists_db
+  def test_dequeue_from_exists_db
     3.times do |i|
-      @db[:dones].insert(:value=> i)
+      @todo.dones.create(:value=> i)
     end
 
-    @todo.enquene 1
-    @todo.enquene 5
+    @todo.enqueue 1
+    @todo.enqueue 5
 
-    refute_equal 1, @todo.dequene
+    refute_equal 1, @todo.dequeue
+  end
+
+  def teardown
+    @todo.dones.delete_all
   end
 end

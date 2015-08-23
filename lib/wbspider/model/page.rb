@@ -1,6 +1,6 @@
 # encoding : utf-8
 
 module Wbspider
-  class Page < Sequel::Model
+  class Page < ActiveRecord::Base
   end
 end

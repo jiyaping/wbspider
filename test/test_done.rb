@@ -2,15 +2,10 @@ gem "minitest"
 require 'minitest/autorun'
 require 'wbspider'
 
-class QueneDoneTest < Minitest::Test
+class QueueDoneTest < Minitest::Test
   def setup
-    @db = Sequel.sqlite
-    @db.create_table? :dones do
-      primary_key :id
-      String      :value
-    end
     @q_length = 5
-    @dones = Wbspider::QueneDone.new(@db, @q_length)
+    @dones = Wbspider::QueueDone.new(Wbspider::Done, @q_length)
   end
 
   def test_add
@@ -22,7 +17,7 @@ class QueneDoneTest < Minitest::Test
   def test_add_remote
     @dones.add 10
 
-    assert_equal  1, @db[:dones].count
+    assert_equal  1, @dones.dones.count
   end
 
   def test_add_five_item 
@@ -50,6 +45,10 @@ class QueneDoneTest < Minitest::Test
 
     @dones.add 10
 
-    assert_equal @q_length + 1, @db[:dones].count
+    assert_equal @q_length + 1, @dones.dones.count
+  end
+
+  def teardown
+    @dones.dones.delete_all
   end
 end

@@ -1,6 +1,6 @@
 # encoding : utf-8
 
 module Wbspider
-  class Relation < Sequel::Model
+  class Relation < ActiveRecord::Base
   end
 end

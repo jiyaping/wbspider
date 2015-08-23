@@ -5,10 +5,9 @@ module Wbspider
     attr_accessor :userid, :usernick
 
     def initialize(opts={})
+      super(opts)
       @userid = ext_userid
       @usernick = nickname
-
-      super
     end
 
     def nextpage
@@ -21,7 +20,7 @@ module Wbspider
     end
 
     def nickname
-      node = agent.page.at("div[class='ut']")
+      node = @agent.page.at("div[class='ut']")
 
       if(node)
         node.text.sub('关注的人', '')
@@ -29,8 +28,8 @@ module Wbspider
     end
     
     def fill_models
-      @agent.search("table").each do |node|
-        models<< Relation.new(ext_single_follow(node))
+      @agent.page.search("table").each do |node|
+        @models<< Relation.new(ext_single_follow(node))
       end
     end
 
@@ -45,8 +44,8 @@ module Wbspider
       fields
     end
 
-    def ext_userid(node)
-      $1 if node.search(".tip2").at("a[href*='/fan']")[:href].match /\/(\d*)\//
+    def ext_userid
+      $1 if @agent.page.search(".tip2").at("a[href*='/fan']")[:href].match /\/(\d*)\//
     end
 
     def ext_follow(node)

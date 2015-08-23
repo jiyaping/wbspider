@@ -1,7 +1,7 @@
 # encoding : utf-8
 
 module Wbspider
-  class QueneDone < Quene
+  class QueueDone < Queue
     def add(value)
       shift if size >= @q_length
 
