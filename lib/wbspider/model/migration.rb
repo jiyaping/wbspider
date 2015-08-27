@@ -14,8 +14,8 @@ module Wbspider
         t.string  :content_pic 
         t.string  :attitude
         t.string  :attitude_href
-        t.string  :report
-        t.string  :report_href
+        t.string  :repost
+        t.string  :repost_href
         t.string  :comment
         t.string  :comment_href
         t.string  :favorite_href
@@ -30,8 +30,9 @@ module Wbspider
         t.string  :original_content 
         t.string  :original_pic
         t.string  :original_attitude
-        t.string  :original_report
+        t.string  :original_repost
         t.string  :original_comment
+        t.string  :original_comment_href
       end
     end
 

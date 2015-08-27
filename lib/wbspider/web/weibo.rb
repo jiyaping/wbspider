@@ -18,10 +18,10 @@ module Wbspider
     end
 
     def fill_models
-      nodes = @agent.page.search("div[class='c',id*='M_']")
+      nodes = @agent.page.search("div[id*='M_']")
 
       nodes.each do |node|
-        models << Weibo.new(fill_single_model(node))
+        models << Weibo.new(ext_single_weibo(node))
       end
     end
   end

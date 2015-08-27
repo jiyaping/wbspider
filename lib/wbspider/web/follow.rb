@@ -23,7 +23,7 @@ module Wbspider
       node = @agent.page.at("div[class='ut']")
 
       if(node)
-        node.text.sub('关注的人', '')
+        node.text[0...node.text.index('关注的人')]
       end
     end
     
@@ -36,20 +36,20 @@ module Wbspider
     def ext_single_follow(node)
       fields = {}
 
-      fields[:user_id]        =   @userid
-      fields[:user_nick]      =   @usernick
+      fields[:user_id]        =   ext_userid
+      fields[:user_nick]      =   nickname
       fields[:follower_id]    =   ext_follow(node)
       fields[:follower_nick]  =   ext_follow_nick(node)
-      
+
       fields
     end
 
     def ext_userid
-      $1 if @agent.page.search(".tip2").at("a[href*='/fan']")[:href].match /\/(\d*)\//
+      return $1 if @agent.page.at("a[href*='/fans']")[:href].match /(\d+)/
     end
 
     def ext_follow(node)
-      $1 if node.search("td").last.children[0][:href].match /\/(\d*)/
+      return $1 if node.search("td").at("a[href*='attention']")[:href].match /uid=(\d+)/
     end
 
     def ext_follow_nick(node)

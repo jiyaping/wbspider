@@ -6,20 +6,20 @@ module Wbspider
       fields = {}
 
       is_repost = node.children.size == 2
-      return ext_weibo_original(node.children[0]) unless is_repost
+      return ext_weibo_original(node) unless is_repost
 
       c_node = node.children[1]
       o_node = node.children[0]
 
       fields[:nickname], fields[:nick_href] = ext_nickname_href(o_node)
-      fields[:userid] = user
+      fields[:user_id] = user
       fields[:weibo_id] = ext_weibo_id(node)
       fields[:is_vip] = 'v' if ext_vip(o_node)
       fields[:is_donate] = 'm' if ext_donate(o_node)
       fields[:content] = ext_original_content(c_node)
       fields[:content_pic] = ext_content_pic(c_node)
       fields[:attitude_href], fields[:attitude] = ext_attitude(c_node)
-      fields[:report_href], fields[:report] = ext_repost(c_node)
+      fields[:repost_href], fields[:repost] = ext_repost(c_node)
       fields[:comment_href], fields[:comment] = ext_comment(c_node)
       fields[:favorite_href] = ext_favorite(c_node)
       fields[:generate_by] = ext_generate_by(node)
@@ -33,6 +33,7 @@ module Wbspider
       fields[:original_attitude] = ext_original_attitude(o_node)
       fields[:original_repost] = ext_original_repost(o_node)
       fields[:original_comment_href], fields[:original_comment] = ext_comment(o_node)
+      fields[:repost_id] = ext_repost_id(o_node)
 
       fields
     end
@@ -40,18 +41,20 @@ module Wbspider
     def ext_weibo_original(node)
       fields = {}
 
-      fields[:nickname], fields[:nick_href] = ext_nickname_href(node)
+      c_node = node.children[0]
+
+      fields[:nickname], fields[:nick_href] = ext_nickname_href(c_node)
       fields[:weibo_id] = ext_weibo_id(node)
-      fields[:is_vip] = 'v' if ext_vip(node)
-      fields[:is_donate] = 'm' if ext_donate(node)
-      fields[:content] = ext_content(node)
-      fields[:content_pic] = ext_content_pic(node)
-      fields[:attitude_href], fields[:attitude] = ext_attitude(node)
-      fields[:report_href], fields[:report] = ext_repost(node)
-      fields[:comment_href], fields[:comment] = ext_comment(node)
-      fields[:favorite_href] = ext_favorite(node)
-      fields[:generate_by] = ext_generate_by(node)
-      fields[:generate_time] = ext_generate_time(node)
+      fields[:is_vip] = 'v' if ext_vip(c_node)
+      fields[:is_donate] = 'm' if ext_donate(c_node)
+      fields[:content] = ext_content(c_node)
+      fields[:content_pic] = ext_content_pic(c_node)
+      fields[:attitude_href], fields[:attitude] = ext_attitude(c_node)
+      fields[:repost_href], fields[:repost] = ext_repost(c_node)
+      fields[:comment_href], fields[:comment] = ext_comment(c_node)
+      fields[:favorite_href] = ext_favorite(c_node)
+      fields[:generate_by] = ext_generate_by(c_node)
+      fields[:generate_time] = ext_generate_time(c_node)
 
       fields
     end
@@ -59,7 +62,7 @@ module Wbspider
     def ext_original_repost(o_node)
       value = o_node.to_html.scan(/>转发\[(\d*)\]</).first
 
-      return value.first if not value.nil?
+      return value.first if value
 
       0
     end
@@ -166,6 +169,10 @@ module Wbspider
       end
 
       content
+    end
+
+    def ext_repost_id(o_node)
+      return $1 if o_node.at("a[href*='comment']")[:href].match /comment\/(.*)\?/
     end
 
     def ext_vip(node)

@@ -8,7 +8,9 @@ module Wbspider
                   :ssl,
                   :spiderid,
                   :page2db,
-                  :model2db
+                  :model2db,
+                  :models,
+                  :pagetime
 
     def initialize(opts={})
       @agent    = opts[:agent]
@@ -19,6 +21,7 @@ module Wbspider
 
       @page_idx, @total_page = get_page_size
       @models   = []
+      @pagetime = pagetime
 
       fill_models
       page_save  if page2db
@@ -62,7 +65,9 @@ module Wbspider
     end
 
     def user
-      $1 if agent.page.uri.to_s.match /\/(\d+)\/?/
+      userid = $1 if agent.page.uri.to_s.match /\/(\d+)\/?/
+
+      return userid
     end
 
     def nickname; end
@@ -79,6 +84,16 @@ module Wbspider
 
     def info
       "#{@page_idx} #{@total_page} #{@spiderid}"
+    end
+
+    def pagetime
+      time_str = $1 if @agent.page.at('.b').text.match /\[(.*)\]/
+
+      if time_str
+        DateTime.strptime(time_str, '%m-%d %H:%M')
+      else
+        DateTime.now
+      end
     end
   end
 end

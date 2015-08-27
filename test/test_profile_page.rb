@@ -11,4 +11,8 @@ class ProfilePageTest < Minitest::Test
     @agent = Mechanize.new
     @agent.get("file://#{@html_dir}/local_page/profile.html")
   end
+
+  def test_profile_page_initalize
+    assert Wbspider::ProfilePage.new(:agent=> @agent)
+  end
 end

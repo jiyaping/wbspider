@@ -12,10 +12,10 @@ module Wbspider
     end
 
     def nickname
-      node = agent.page.at("div[class='ut']")
+      node = @agent.page.at("div[class='ut']")
 
       if(node)
-        node.text.sub('的粉丝', '')
+        node.text[0...node.text.index('的粉丝')]
       end
     end
 
@@ -24,8 +24,8 @@ module Wbspider
 
       fields[:user_id]        =   ext_follow(node)
       fields[:user_nick]      =   ext_follow_nick(node)
-      fields[:follower_id]    =   @userid
-      fields[:follower_nick]  =   @usernick
+      fields[:follower_id]    =   ext_userid
+      fields[:follower_nick]  =   nickname
       
       fields
     end

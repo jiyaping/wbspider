@@ -16,6 +16,8 @@ require 'wbspider/web/follow'
 require 'wbspider/web/profile'
 require 'wbspider/web/webpage'
 require 'wbspider/web/weibo'
+require 'wbspider/web/fans'
+require 'wbspider/web/timeline'
 
 require 'wbspider/model/page'
 require 'wbspider/model/profile'
