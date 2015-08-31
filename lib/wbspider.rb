@@ -3,12 +3,14 @@
 require 'mechanize'
 require 'yaml'
 require 'active_record'
+require 'rainbow/ext/string'
 
-require 'wbspider/queue'
-require 'wbspider/todo'
-require 'wbspider/dones'
-require 'wbspider/agent'
-require 'wbspider/version'
+require 'wbspider/model/page'
+require 'wbspider/model/profile'
+require 'wbspider/model/relation'
+require 'wbspider/model/weibo'
+require 'wbspider/model/done'
+require 'wbspider/model/migration'
 
 require 'wbspider/web/pageparser'
 require 'wbspider/web/webpage'
@@ -19,12 +21,12 @@ require 'wbspider/web/weibo'
 require 'wbspider/web/fans'
 require 'wbspider/web/timeline'
 
-require 'wbspider/model/page'
-require 'wbspider/model/profile'
-require 'wbspider/model/relation'
-require 'wbspider/model/weibo'
-require 'wbspider/model/done'
-require 'wbspider/model/migration'
+require 'wbspider/queue'
+require 'wbspider/todo'
+require 'wbspider/dones'
+require 'wbspider/agent'
+require 'wbspider/version'
+
 
 module Wbspider
   class WbspiderError < StandardError; end
@@ -42,7 +44,22 @@ module Wbspider
     :start_from =>  '',
     :db_string  =>  File.join(@home, "weibo.sqlite"),
     :cookie_path=>  File.join(@home, 'cookies'),
-    :spider     =>  'Voyager.NO1'
+    :spiderid   =>  'Voyager.NO1',
+    :formater   =>  {
+                      :weibo => {
+                        :value => "%{nickname}%{content}",
+                        :color => {
+                          :nickname => "color(:red)",
+                          :content => "color(:green)"
+                        }
+                      },
+                      :profile => {
+                        :value => "%{nickname}"
+                        :color => {
+                          :nickname => "color(:red)"
+                        }
+                      }
+                    }
   }
 
   @valid_config_keys = @config.keys

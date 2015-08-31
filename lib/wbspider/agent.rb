@@ -1,165 +1,150 @@
-# encoding:utf-8
+#encoding : utf-8
 
 module Wbspider
-  class Spider
-    attr_accessor :config, :qdone, :qtodo, :agent
+  class Agent
+    @@queue_len = 100
+
+    attr_accessor :config, 
+                  :qdone, 
+                  :qtodo, 
+                  :agent,
+                  :userid,
+                  :ssl
 
     def initialize(opts={})
-      @config = {
-        :q_done_len => 5_000,
-        :q_todo_len => 30_000,
-        :start_id => 'jiyaping0802',
-        :db => '',
-        :site_uname => '18938952082',
-        :site_pwd => '20080802',
-        :cookie_file => "c:\\",
-        :spiderid => "NO1"
-      }
+      @config = opts
+      @qdone  = QueueDone.new(QueueDone, @@queue_len)
+      @qtodo  = QueueTodo.new(QueueTodo, @@queue_len * 2)
+      @agent  = Mechanize.new
 
-      @config.merge! opts
+      #set proxy for debug
+      @agent.set_proxy '127.0.0.1', 8888
 
-      @qdone = QueneDone.new(config[:q_done_len], config[:db])
-      @qtodo = QueneTodo.new(config[:q_todo_len], config[:db])
-      @agent = Mechanize.new
-      #debug
-      #@agent.set_proxy '127.0.0.1', 8888
+      change_agent
+      login_muti_times
     end
 
-    def start
-      login
-      puts "login success" if login?
-      #init stack
-      total_page, userid = basic_info(@config[:start_id])
-      puts "#{total_page} : #{userid}"
-      
-      page = FollowPage.new(:agent=> @agent,
-                            :userid=> userid,
-                            :start_page=> "http://weibo.cn/#{userid}/follow")
-      page.follows.each do |uid|
-        @qtodo.enquene(uid) if not @qdone.search(uid)
-      end
-
-      puts '-'*20
-      p qtodo
-      puts '-'*20
-
-      while(true)
-        change_agent
-        i = 1
-        while not login?
-          puts "第#{i+=1}尝试登录....."
-          login(true)
-          sleep 60
-        end
-        curr_userid = @qtodo.dequene
-        curr_weibos = WeiboPage.new(:agent=> @agent,
-                                    :userid=> curr_userid,
-                                    :start_page=> "http://weibo.cn/#{curr_userid}",
-                                    :spiderid=> @spiderid)
-        @qdone.add curr_userid if curr_weibos.saving
-
-        curr_follows = FollowPage.new(:agent=> @agent,
-                                      :userid=> curr_userid,
-                                      :start_page=> "http://weibo.cn/#{curr_userid}/follow",
-                                      :spiderid=> @spiderid)
-        curr_follows.saving
-        curr_follows.follows.each do |uid|
-          @qtodo.enquene(uid) if not @qdone.search(uid)
-        end
-
-        curr_profile = ProfilePage.new(:agent=> @agent,
-                                       :userid=> curr_userid,
-                                       :start_page=> "http://weibo.cn/#{curr_userid}/info",
-                                       :spiderid=> @spiderid)
-        curr_profile.saving
-
-        break if(@qtodo.size == 0)
-        puts "status : qtodo=>#{@qtodo.size} qdone=>#{@qdone.size} last=>#{@qdone.first}"
-      end
+    def timeline
+      goto(:timeline)
+      TimelinePage.new(@config.merge :agent=>@agent)
     end
 
-    def basic_info(id)
-      agent.get("http://weibo.cn/#{id}")
+    def index(param={})
+      goto(:index, fill_param(param))
+      WeiboPage.new(@config.merge :agent=>@agent)
+    end
 
-      if original_id? id
-        original_id = id
-      else
-        if agent.page.at("div[class='ut']").to_html.match /\/(\d*)\/info/
-          original_id = $1
-        end
-      end
+    def fans(param={})
+      goto(:fans, fill_param(param))
+      FansPage.new(@config.merge :agent=>@agent)
+    end
 
-      node = agent.page.at('#pagelist form div')
-      if node
-        text = node.children.last.text
-        if text.match /(\d*)\/(\d*)/
-          total_page = $2
-        end
-      else
-        total_page = 1
-      end
+    def follow(param={})
+      goto(:follow, fill_param(param))
+      FollowPage.new(@config.merge :agent=>@agent)
+    end
 
-      return total_page, original_id
+    def fill_param(param)
+      param[:userid]   ||= @userid
+      param[:page_num] ||= 1 #if param.keys.index :page_num
+
+      param
+    end
+
+    def login_muti_times(times = 3)
+      begin
+        login
+        times -= 1
+      end while not login? and times > 1
+
+      # login success and then init userid
+      init_userid
+    end
+
+    def init_userid
+      @userid ||= $1 if @agent.page.at('.tip2').at('a')[:href].match /\/(\d+)\//
     end
 
     def login(force=false)
-      login_cookie = File.join(@config[:cookie_file], 'weibo_cn_cookies')
-      if File.exists?(login_cookie) and not force
-        puts "#{login_cookie} exists "
-        @agent.cookie_jar.load(login_cookie)
-        @agent.get("http://weibo.cn/")
+      cookie_file = File.join(@config[:cookie_path], "#{@config[:username]}.cookies")
 
-        return true if login?
+      if(File.exists?(cookie_file) && (not force))
+        login_with_cookies(cookie_file)
+      else
+        login_with_username(cookie_file)
       end
-
-      change_agent
-      page = agent.get('http://login.weibo.cn/login/')
-      page.form.fields[0].value = @config[:site_uname]
-      page.form.fields[1].value = @config[:site_pwd]
-
-      agent.submit(page.form, page.form.buttons.first)
-      agent.cookie_jar.save_as login_cookie
-      return true if login?
-
-      false
-    end
-
-    def change_agent
-      agent_arr = [
-                  'Linux Firefox',
-                  'Linux Konqueror',
-                  'Linux Mozilla',
-                  'Mac Firefox',
-                  'Mac Mozilla',
-                  'Mac Safari 4',
-                  'Mac Safari',
-                  'Windows Chrome',
-                  'Windows IE 6',
-                  'Windows IE 7',
-                  'Windows IE 8',
-                  'Windows IE 9',
-                  'Windows Mozilla',
-                  'iPhone',
-                  'iPad',
-                  'Android']
-
-      @agent.user_agent_alias = agent_arr[rand(agent_arr.size)]
     end
 
     def login?
       @agent.page.at('.nl') != nil
     end
 
-    def shortname(agent, userid)
-      page = agent.get("http://weibo.cn/#{userid}/info")
+    def login_with_username(cookie_file)
+      page = goto(:login)
 
-      if (page.parser.to_html.match /:http:\/\/weibo.cn\/([^<.]*)/)
-        return $1
+      page.form.fields[0].value = @config[:username]
+      page.form.fields[1].value = @config[:password]
+
+      @agent.submit page.form, page.form.buttons.first
+      save_cookie(cookie_file)
+    end
+
+    def login_with_cookies(cookie_file)
+      load_cookie(cookie_file)
+
+      goto(:timeline)
+    end
+
+    def save_cookie(path)
+      Dir.mkdir File.dirname(path) unless Dir.exists? File.dirname(path)
+
+      @agent.cookie_jar.save(path)
+    end
+
+    def load_cookie(path)
+      @agent.cookie_jar.load(path)
+    end
+
+    def change_agent
+      agent_arr = [
+                    'iPhone',
+                    'iPad',
+                    'Android'
+                    ]
+
+      @agent.user_agent_alias = agent_arr[rand(agent_arr.size)]
+    end
+
+    def goto(page_flag, param=nil)
+      param ||= fill_param({})
+
+      case page_flag
+      when :timeline
+        @agent.get(fullpath('/'))
+      when :index
+        # tricky for self index. with /profile suffix
+        cxt_path = "%{userid}"
+        cxt_path = "%{userid}/profile" if param[:userid] == @userid
+        @agent.get(fullpath(cxt_path, param))
+      when :login
+        @agent.get(fullpath("login.weibo.cn/login/"))
+      when :fans
+        @agent.get(fullpath("%{userid}/fans?page=%{page_num}", param))
+      when :follow
+        @agent.get(fullpath("%{userid}/follow?page=%{page_num}", param))
+      else
+        @agent.get(fullpath("/"))
       end
     end
 
-    def original_id?(value)
-      not value =~ /[^\d]+/
+    def fullpath(context_path, param={})
+      prefix = 'http://'
+      prefix = 'https://' if @ssl
+
+      #handler login page
+      return File.join(prefix, context_path) if context_path == 'login.weibo.cn/login/'
+
+      File.join(prefix, 'weibo.cn' , context_path % param)
     end
   end
 end

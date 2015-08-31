@@ -19,6 +19,6 @@ class TimelineTest < Minitest::Test
   end
 
   def test_timeline_initalize
-    pp Wbspider::TimelinePage.new(:agent=> @agent).models
+    assert Wbspider::TimelinePage.new(:agent=> @agent).models
   end
 end
