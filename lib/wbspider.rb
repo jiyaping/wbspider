@@ -54,7 +54,7 @@ module Wbspider
                         }
                       },
                       :profile => {
-                        :value => "%{nickname}"
+                        :value => "%{nickname}",
                         :color => {
                           :nickname => "color(:red)"
                         }
