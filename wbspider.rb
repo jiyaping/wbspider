@@ -75,10 +75,10 @@ module Wbspider
       @config = {
         :q_done_len => 5_000,
         :q_todo_len => 30_000,
-        :start_id => 'jiyaping0802',
+        :start_id => 'jiyapingxx0802',
         :db => Wbspider.db,
-        :site_uname => 'jiyaping0802@gmail.com',
-        :site_pwd => '20080802jyp!',
+        :site_uname => 'xxxxxx@gamil.com',
+        :site_pwd => 'xxxxxpwd',
         :cookie_file => "c:\\cookie_files",
         :spiderid => "NO1",
         :carsh_cache => "c:\\carsh_cache"
